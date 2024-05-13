@@ -2,7 +2,7 @@ import logging
 
 import semver
 
-import copernicusmarine
+from copernicusmarine import __version__ as client_version
 from copernicusmarine.core_functions.sessions import (
     get_configured_request_session,
 )
@@ -37,7 +37,6 @@ class VersionVerifier:
         marine_data_store_versions = (
             VersionVerifier._get_client_required_versions(staging)
         )
-        client_version = copernicusmarine.__version__
         for (
             service
         ) in VersionVerifier.function_marine_data_store_service_mapping[
@@ -61,9 +60,9 @@ class VersionVerifier:
         staging: bool,
     ) -> dict[str, str]:
         url_mds_versions = (
-            "https://stac-dta.marine.copernicus.eu/mdsVersions.json"
+            "https://s3.waw3-1.cloudferro.com/mdl-metadata-dta/mdsVersions.json"
             if staging
-            else "https://stac.marine.copernicus.eu/mdsVersions.json"
+            else "https://s3.waw3-1.cloudferro.com/mdl-metadata/mdsVersions.json"
         )
         logger.debug(f"Getting required versions from {url_mds_versions}")
         session = get_configured_request_session()
