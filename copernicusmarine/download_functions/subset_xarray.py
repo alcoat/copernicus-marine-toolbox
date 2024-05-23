@@ -7,7 +7,6 @@ from typing import List, Literal, Optional, Union
 import numpy
 import xarray
 from pandas import Timestamp
-from xarray.backends import PydapDataStore
 
 from copernicusmarine.catalogue_parser.catalogue_parser import (
     CopernicusMarineDatasetServiceType,
@@ -23,6 +22,7 @@ from copernicusmarine.core_functions.exceptions import (
 )
 from copernicusmarine.core_functions.models import SubsetMethod
 from copernicusmarine.core_functions.utils import (
+    ServiceNotSupported,
     convert_datetime64_to_netcdf_timestamp,
 )
 from copernicusmarine.download_functions.subset_parameters import (
@@ -41,26 +41,6 @@ COORDINATES_LABEL = {
     "time": ["time_counter", "time"],
     "depth": ["depth", "deptht", "elevation"],
 }
-
-
-def _nearest_neighbor_coordinates(
-    dataset: xarray.Dataset,
-    dimension: str,
-    target_value: Union[float, datetime],
-):
-    if isinstance(target_value, datetime):
-        target_value = numpy.datetime64(target_value)
-    coordinates = dataset[dimension].values
-    index = numpy.searchsorted(coordinates, target_value)
-    index = numpy.clip(index, 0, len(coordinates) - 1)
-    if index > 0 and (
-        index == len(coordinates)
-        or abs(target_value - coordinates[index - 1])
-        < abs(target_value - coordinates[index])
-    ):
-        return coordinates[index - 1]
-    else:
-        return coordinates[index]
 
 
 def _dataset_custom_sel(
@@ -82,9 +62,9 @@ def _dataset_custom_sel(
                     if isinstance(coord_selection, slice)
                     else coord_selection
                 )
-                nearest_neighbor_value = _nearest_neighbor_coordinates(
-                    dataset, coord_label, target
-                )
+                nearest_neighbor_value = dataset.sel(
+                    {coord_label: target}, method="nearest"
+                )[coord_label].values
                 dataset = dataset.sel(
                     {
                         coord_label: slice(
@@ -418,11 +398,7 @@ def check_dataset_subset_bounds(
         )
         dataset_coordinates = dataset.coords
     else:
-        session = sessions.get_configured_request_session()
-        session.auth = (username, password)
-        store = PydapDataStore.open(dataset_url, session=session, timeout=300)
-        dataset = xarray.open_dataset(store)
-        dataset_coordinates = dataset.coords
+        raise ServiceNotSupported(service_type)
     for coordinate_label in COORDINATES_LABEL["latitude"]:
         if coordinate_label in dataset.sizes:
             latitudes = dataset_coordinates[coordinate_label].values
