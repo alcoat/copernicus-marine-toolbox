@@ -28,8 +28,6 @@ from tests.test_utils import (
 
 logger = logging.getLogger()
 
-DOWNLOAD_TEST_FOLDER = "tests/downloads"
-
 
 def get_all_files_in_folder_tree(folder: str) -> list[str]:
     downloaded_files = []
@@ -136,6 +134,7 @@ class TestCommandLineInterface:
             "original-files",
             "arco-geo-series",
             "arco-time-series",
+            "wmts",
         ]
 
         json_result = loads(self.output)
