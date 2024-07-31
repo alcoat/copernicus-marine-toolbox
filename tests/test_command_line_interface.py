@@ -1276,7 +1276,7 @@ class TestCommandLineInterface:
         self.output = execute_in_terminal(command)
 
         assert self.output.returncode == 1
-        assert not (b"Traceback") in self.output.stderr
+        assert b"Traceback" not in self.output.stderr
 
     def test_get_2023_08_original_files(self):
         command = [
@@ -1290,7 +1290,7 @@ class TestCommandLineInterface:
         self.output = execute_in_terminal(command)
 
         assert self.output.returncode == 1
-        assert not (b"No data to download") in self.output.stderr
+        assert b"No data to download" not in self.output.stderr
 
     def test_subset_with_chunking(self, tmp_path):
         command = [
@@ -1332,7 +1332,7 @@ class TestCommandLineInterface:
             "--dataset-url",
             "https://s3.waw3-1.cloudferro.com/mdl-native-14/native/"
             "GLOBAL_ANALYSISFORECAST_PHY_001_024/"
-            "cmems_mod_glo_phy_anfc_0.083deg_P1D-m_202211/2023/11",
+            "cmems_mod_glo_phy_anfc_0.083deg_P1D-m_202406/2023/11",
         ]
 
         self.output = execute_in_terminal(command)
